@@ -400,30 +400,34 @@ class XlsxDecoder extends SpreadsheetDecoder {
       default:
         var s = node.getAttribute('s');
         var valueNode = node.findElements('v');
-        var content = valueNode.first;
-        if (s != null) {
-          var fmtId = _numFormats[int.parse(s)];
-          // date
-          if (((fmtId >= 14) && (fmtId <= 17)) || (fmtId == 22)) {
-            var delta = num.parse(_parseValue(content)) * 24 * 3600 * 1000;
-            var date = DateTime(1899, 12, 30);
-            value = date
-                .add(Duration(milliseconds: delta.toInt()))
-                .toIso8601String();
-            // time
-          } else if (((fmtId >= 18) && (fmtId <= 21)) ||
-              ((fmtId >= 45) && (fmtId <= 47))) {
-            var delta = num.parse(_parseValue(content)) * 24 * 3600 * 1000;
-            var date = DateTime(0);
-            date = date.add(Duration(milliseconds: delta.toInt()));
-            value =
-                '${_twoDigits(date.hour)}:${_twoDigits(date.minute)}:${_twoDigits(date.second)}';
-            // number
+        if (valueNode != null && valueNode.isNotEmpty) {
+          var content = valueNode.first;
+          if (s != null) {
+            var fmtId = _numFormats[int.parse(s)];
+            // date
+            if (((fmtId >= 14) && (fmtId <= 17)) || (fmtId == 22)) {
+              var delta = num.parse(_parseValue(content)) * 24 * 3600 * 1000;
+              var date = DateTime(1899, 12, 30);
+              value = date
+                  .add(Duration(milliseconds: delta.toInt()))
+                  .toIso8601String();
+              // time
+            } else if (((fmtId >= 18) && (fmtId <= 21)) ||
+                ((fmtId >= 45) && (fmtId <= 47))) {
+              var delta = num.parse(_parseValue(content)) * 24 * 3600 * 1000;
+              var date = DateTime(0);
+              date = date.add(Duration(milliseconds: delta.toInt()));
+              value =
+                  '${_twoDigits(date.hour)}:${_twoDigits(date.minute)}:${_twoDigits(date.second)}';
+              // number
+            } else {
+              value = num.parse(_parseValue(content));
+            }
           } else {
             value = num.parse(_parseValue(content));
           }
         } else {
-          value = num.parse(_parseValue(content));
+          print('Cannot properly read valueNode for $node');
         }
     }
     row.add(value);
